@@ -1,0 +1,2385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StudioPad Pastel — Sound Pad &amp; Audio Sampler</title>
+  <style>
+    /* =========================================================================
+       1. DESIGN TOKENS & LIGHT PASTEL THEME
+       ========================================================================= */
+    :root {
+      --bg-canvas: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-pastel-tint: #f3f7fc;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+      --border-light: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --accent-sky: #0284c7;
+      --accent-sky-hover: #0369a1;
+      --accent-mint: #059669;
+      --accent-rose: #e11d48;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 24px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 8px 20px -6px rgba(15, 23, 42, 0.1), 0 3px 8px -4px rgba(15, 23, 42, 0.06);
+      --shadow-lg: 0 20px 38px -12px rgba(15, 23, 42, 0.18);
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      background-color: var(--bg-canvas);
+      background-image:
+        radial-gradient(circle at 12% 8%, rgba(255, 182, 193, 0.22) 0%, transparent 38%),
+        radial-gradient(circle at 88% 12%, rgba(167, 243, 208, 0.24) 0%, transparent 40%),
+        radial-gradient(circle at 50% 95%, rgba(186, 230, 253, 0.25) 0%, transparent 45%);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.45;
+      overflow-x: hidden;
+    }
+
+    button, input, select {
+      font-family: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mono {
+      font-family: var(--font-mono);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* =========================================================================
+       2. LAYOUT CONTAINER & HEADER
+       ========================================================================= */
+    .app-shell {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 14px 16px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    @media (min-width: 768px) {
+      .app-shell {
+        padding: 22px 24px 72px;
+        gap: 18px;
+      }
+    }
+
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .top-header {
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    @media (min-width: 900px) {
+      .top-header {
+        padding: 18px 22px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #fecdd3 0%, #bae6fd 50%, #bbf7d0 100%);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: #0f172a;
+      box-shadow: var(--shadow-sm);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-main);
+    }
+
+    .brand-subtitle {
+      margin: 2px 0 0;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .header-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill-control {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .pill-control input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--accent-mint);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .pill-control input[type="range"] {
+      width: 78px;
+      accent-color: var(--accent-sky);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 9px 14px;
+      min-height: 38px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-size: 0.8rem;
+      font-weight: 700;
+      transition: transform 0.12s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-primary {
+      background: var(--accent-sky);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.22);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-sky-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      border-color: var(--border-strong);
+    }
+
+    .btn-secondary:hover {
+      background: #e2e8f0;
+    }
+
+    .btn-secondary.is-active {
+      background: #fef3c7;
+      border-color: #f59e0b;
+      color: #78350f;
+    }
+
+    .btn-soft-danger {
+      background: #fff1f2;
+      color: #be123c;
+      border-color: #fecdd3;
+    }
+
+    .btn-soft-danger:hover {
+      background: #ffe4e6;
+    }
+
+    .btn-emerald {
+      background: var(--accent-mint);
+      color: #ffffff;
+    }
+
+    .btn-emerald:hover {
+      background: #047857;
+    }
+
+    /* =========================================================================
+       3. LIVE ACTIVE PAD MONITOR (MM:SS)
+       ========================================================================= */
+    .monitor-card {
+      padding: 15px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .monitor-top {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    @media (min-width: 768px) {
+      .monitor-top {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    .monitor-track-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .monitor-pad-badge {
+      min-width: 44px;
+      height: 44px;
+      padding: 0 10px;
+      border-radius: 13px;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      color: #0369a1;
+      font-weight: 800;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .monitor-pad-badge.playing {
+      background: #d1fae5;
+      border-color: #6ee7b7;
+      color: #065f46;
+    }
+
+    .monitor-pad-badge.fading {
+      background: #fef3c7;
+      border-color: #fcd34d;
+      color: #92400e;
+    }
+
+    .monitor-title-wrap {
+      min-width: 0;
+    }
+
+    .monitor-status-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-soft);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #94a3b8;
+    }
+
+    .status-dot.playing {
+      background: #10b981;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.22);
+    }
+
+    .status-dot.fading {
+      background: #f59e0b;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25);
+    }
+
+    .monitor-track-name {
+      margin: 2px 0 0;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .monitor-time-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 8px 14px;
+    }
+
+    .time-main {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .time-sep {
+      color: #94a3b8;
+      margin: 0 4px;
+      font-weight: 600;
+    }
+
+    .time-total {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .time-rem-wrap {
+      text-align: right;
+    }
+
+    .time-rem-label {
+      display: block;
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-soft);
+    }
+
+    .time-rem-val {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #0369a1;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #0284c7 0%, #10b981 100%);
+      transition: width 0.08s linear;
+    }
+
+    .progress-fill.fading {
+      background: linear-gradient(90deg, #f59e0b 0%, #fb7185 100%);
+    }
+
+    /* =========================================================================
+       4. ARRANGE BAR & SOUND PAD GRID
+       ========================================================================= */
+    .arrange-bar {
+      padding: 12px 16px;
+      border-radius: 16px;
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      display: none;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .arrange-bar.visible {
+      display: flex;
+    }
+
+    .arrange-note {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #78350f;
+    }
+
+    .pad-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    @media (min-width: 480px) {
+      .pad-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 820px) {
+      .pad-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (min-width: 1100px) {
+      .pad-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    /* Empty Board Card (+ Add First Pad) */
+    .empty-board-card {
+      grid-column: 1 / -1;
+      background: var(--bg-surface);
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius-xl);
+      padding: 48px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .empty-icon-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #fce7f3 0%, #e0f2fe 100%);
+      border: 1px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .empty-title {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .empty-desc {
+      margin: 0;
+      max-width: 440px;
+      font-size: 0.86rem;
+      color: var(--text-muted);
+    }
+
+    /* Individual Solid Pastel Pad */
+    .sound-pad {
+      position: relative;
+      min-height: 176px;
+      border-radius: var(--radius-xl);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+      border: 2px solid rgba(15, 23, 42, 0.1);
+      box-shadow: var(--shadow-sm);
+      user-select: none;
+      touch-action: manipulation;
+      transition: transform 0.13s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      overflow: hidden;
+    }
+
+    .sound-pad:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .sound-pad:active {
+      transform: scale(0.985);
+    }
+
+    .sound-pad.is-playing {
+      border-color: #059669;
+      box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.24), var(--shadow-md);
+    }
+
+    .sound-pad.is-fading {
+      border-color: #d97706;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.28), var(--shadow-md);
+    }
+
+    .sound-pad.is-arranging {
+      border-style: dashed;
+      border-color: #d97706;
+      cursor: grab;
+    }
+
+    .sound-pad.drag-over {
+      outline: 3px solid #0284c7;
+      transform: scale(1.02);
+    }
+
+    .pad-top-bar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 8px;
+      z-index: 2;
+    }
+
+    .pad-num-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 38px;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 11px;
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid rgba(15, 23, 42, 0.12);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.9rem;
+    }
+
+    .pad-action-btns {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pad-mini-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      border: 1px solid rgba(15, 23, 42, 0.14);
+      background: rgba(255, 255, 255, 0.82);
+      color: #0f172a;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .pad-mini-btn:hover {
+      background: #ffffff;
+    }
+
+    .pad-mini-btn.del:hover {
+      background: #ffe4e6;
+      color: #be123c;
+      border-color: #fda4af;
+    }
+
+    .pad-center-info {
+      z-index: 2;
+    }
+
+    .pad-music-title {
+      margin: 0;
+      font-size: 1.08rem;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.01em;
+      word-break: break-word;
+    }
+
+    .pad-source-sub {
+      margin: 3px 0 0;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: rgba(15, 23, 42, 0.72);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pad-bottom-bar {
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(15, 23, 42, 0.1);
+    }
+
+    .pad-state-tag {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      color: #0f172a;
+    }
+
+    .pad-state-tag.playing {
+      background: #059669;
+      color: #ffffff;
+    }
+
+    .pad-state-tag.fading {
+      background: #d97706;
+      color: #ffffff;
+    }
+
+    .pad-clock-readout {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #0f172a;
+      background: rgba(255, 255, 255, 0.72);
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+
+    .pad-arrange-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      z-index: 2;
+    }
+
+    .arrange-move-btn {
+      flex: 1;
+      padding: 6px 8px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(15, 23, 42, 0.18);
+      color: #0f172a;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+
+    .arrange-move-btn:hover {
+      background: #ffffff;
+    }
+
+    /* =========================================================================
+       5. MODALS & TOAST NOTIFICATION
+       ========================================================================= */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.48);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-panel {
+      width: 100%;
+      max-width: 500px;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      padding: 20px;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .field-group {
+      margin-bottom: 14px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .field-input, .field-select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-pastel-tint);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .field-input:focus, .field-select:focus {
+      outline: 2px solid var(--accent-sky);
+      background: #ffffff;
+    }
+
+    .upload-box {
+      border: 2px dashed #7dd3fc;
+      background: #f0f9ff;
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .upload-file-input {
+      display: block;
+      width: 100%;
+      margin: 8px auto 0;
+      font-size: 0.8rem;
+      color: var(--text-main);
+      background: #ffffff;
+      border: 1px solid #bae6fd;
+      border-radius: 12px;
+      padding: 8px;
+    }
+
+    .upload-file-input::file-selector-button {
+      margin-right: 10px;
+      padding: 6px 12px;
+      border-radius: 9px;
+      border: none;
+      background: var(--accent-sky);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 0.78rem;
+      cursor: pointer;
+    }
+
+    .upload-file-input::file-selector-button:hover {
+      background: var(--accent-sky-hover);
+    }
+
+    .upload-status {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-main);
+      word-break: break-word;
+    }
+
+    .upload-meta {
+      margin-top: 2px;
+      font-size: 0.73rem;
+      color: var(--text-muted);
+    }
+
+    .test-play-bar {
+      margin-top: 10px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .test-play-bar.visible {
+      display: flex;
+    }
+
+    .swatch-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .swatch-btn {
+      padding: 8px 6px;
+      border-radius: 12px;
+      border: 2px solid rgba(15, 23, 42, 0.14);
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #0f172a;
+      text-align: center;
+    }
+
+    .swatch-btn.selected {
+      border-color: #0f172a;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.35);
+      transform: scale(1.02);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-mint);
+      cursor: pointer;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .toast-banner {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #0f172a;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 200;
+      max-width: 92vw;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .toast-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top Header & Global Fade / Volume / Pad Controls -->
+    <header class="card top-header">
+      <div class="brand-row">
+        <div class="brand-badge" aria-hidden="true">♪</div>
+        <div>
+          <h1 class="brand-title">StudioPad Pastel</h1>
+          <p class="brand-subtitle">Tap a pad to play &bull; Tap again to auto-fade out &bull; Mobile audio sampler</p>
+        </div>
+      </div>
+
+      <div class="header-controls">
+        <label class="pill-control" title="Automatically fade out before the end of the track">
+          <input id="globalEndFadeToggle" type="checkbox" checked />
+          <span>End Auto-Fade</span>
+        </label>
+
+        <div class="pill-control" title="Fade-out duration in seconds">
+          <span>Fade</span>
+          <input id="fadeDurationRange" type="range" min="0.5" max="10" step="0.5" value="2.5" />
+          <span id="fadeDurationLabel" class="mono">2.5s</span>
+        </div>
+
+        <div class="pill-control" title="Master playback volume">
+          <span>Vol</span>
+          <input id="masterVolumeRange" type="range" min="0" max="1" step="0.02" value="0.9" />
+          <span id="masterVolumeLabel" class="mono">90%</span>
+        </div>
+
+        <button id="arrangeToggleBtn" type="button" class="btn btn-secondary">
+          <span>Arrange</span>
+        </button>
+
+        <button id="stopAllFadeBtn" type="button" class="btn btn-soft-danger">
+          <span>Fade All</span>
+        </button>
+
+        <button id="addPadHeaderBtn" type="button" class="btn btn-primary">
+          <span>+ Add Pad</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Live Active Pad Minutes & Seconds Monitor (MM:SS) -->
+    <section class="card monitor-card" aria-live="polite">
+      <div class="monitor-top">
+        <div class="monitor-track-info">
+          <div id="monitorPadBadge" class="monitor-pad-badge mono">--</div>
+          <div class="monitor-title-wrap">
+            <div class="monitor-status-row">
+              <span id="monitorStatusDot" class="status-dot"></span>
+              <span id="monitorStatusText">READY — ADD YOUR FIRST PAD</span>
+            </div>
+            <h2 id="monitorTrackTitle" class="monitor-track-name">No pad currently playing</h2>
+          </div>
+        </div>
+
+        <div class="monitor-time-box">
+          <div>
+            <span id="monitorElapsed" class="time-main mono">00:00</span>
+            <span class="time-sep">/</span>
+            <span id="monitorDuration" class="time-total mono">00:00</span>
+          </div>
+          <div class="time-rem-wrap">
+            <span class="time-rem-label">Remaining</span>
+            <span id="monitorRemaining" class="time-rem-val mono">-00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-track">
+        <div id="monitorProgressBar" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <!-- Arrange Mode Toolbar -->
+    <div id="arrangeToolbar" class="arrange-bar">
+      <span class="arrange-note">Arrange Mode: Drag pads or use Left / Right buttons to reorder.</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="sortByNumberBtn" type="button" class="btn btn-secondary">Sort by Pad #</button>
+        <button id="doneArrangeBtn" type="button" class="btn btn-emerald">Done</button>
+      </div>
+    </div>
+
+    <!-- Main Pad Grid (Starts Empty with "+ Add First Pad") -->
+    <main id="padGrid" class="pad-grid"></main>
+  </div>
+
+  <!-- Add / Edit Pad Modal -->
+  <div id="padModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="padModalTitle">
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3 id="padModalTitle" class="modal-title">Add Pad</h3>
+        <button id="closePadModalBtn" type="button" class="btn btn-secondary">Close</button>
+      </div>
+
+      <form id="padForm">
+        <input id="editPadIdInput" type="hidden" value="" />
+
+        <div class="field-group">
+          <label for="padNumberInput" class="field-label">Pad Number / Label</label>
+          <input id="padNumberInput" type="text" maxlength="8" required placeholder="1" class="field-input mono" />
+        </div>
+
+        <div class="field-group">
+          <label for="padNameInput" class="field-label">Music or Sound Name</label>
+          <input id="padNameInput" type="text" maxlength="60" required placeholder="e.g. Intro Music, Chime, Drum Loop" class="field-input" />
+        </div>
+
+        <div class="field-group">
+          <span class="field-label">Upload Audio File from Phone Local Storage</span>
+          <div class="upload-box">
+            <div style="font-size:0.82rem;font-weight:700;color:#0369a1;">Select MP3, M4A, WAV, AAC, OGG, FLAC, or OPUS</div>
+            <input
+              id="padAudioFileInput"
+              type="file"
+              accept="audio/*,.mp3,.m4a,.wav,.aac,.ogg,.flac,.opus"
+              class="upload-file-input"
+            />
+            <div id="uploadFileName" class="upload-status">No audio file selected yet</div>
+            <div id="uploadFileMeta" class="upload-meta">Or choose a built-in test tone below</div>
+
+            <div id="modalTestPlayRow" class="test-play-bar">
+              <button id="modalTestPlayBtn" type="button" class="btn btn-emerald">Test Play</button>
+              <span id="modalTestPlayStatus" class="mono" style="font-size:0.75rem;font-weight:700;color:#065f46;">Ready</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="padTonePresetSelect" class="field-label">Or Built-In Sound Tone (Optional)</label>
+          <select id="padTonePresetSelect" class="field-select">
+            <option value="">-- None (Use Uploaded File or Default Tone) --</option>
+            <option value="warm_chord">Warm Pastel Chord (10s)</option>
+            <option value="soft_pulse">Gentle Pulse Beat (12s)</option>
+            <option value="bell_chime">Soft Bell Chime (6s)</option>
+            <option value="deep_bass">Warm Sub Bass (8s)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <span class="field-label">Solid Pastel Pad Color</span>
+          <div id="colorSwatchGrid" class="swatch-grid"></div>
+        </div>
+
+        <div class="field-group">
+          <label class="checkbox-row">
+            <input id="padAutoFadeEndInput" type="checkbox" checked />
+            <span>Auto fade out near the end of this music</span>
+          </label>
+        </div>
+
+        <div class="modal-footer">
+          <button id="cancelPadModalBtn" type="button" class="btn btn-secondary">Cancel</button>
+          <button id="savePadSubmitBtn" type="submit" class="btn btn-primary">Save Pad</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="deleteModalTitle">
+    <div class="modal-panel" style="max-width:400px;">
+      <div class="modal-header">
+        <h3 id="deleteModalTitle" class="modal-title">Delete Sound Pad?</h3>
+      </div>
+      <p id="deleteModalMessage" style="margin:0 0 16px;font-size:0.88rem;color:var(--text-muted);"></p>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button id="cancelDeleteBtn" type="button" class="btn btn-secondary">Keep Pad</button>
+        <button id="confirmDeleteBtn" type="button" class="btn btn-soft-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Banner -->
+  <div id="toastBanner" class="toast-banner" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      /* =======================================================================
+         1. SOLID PASTEL COLOR PALETTE
+         ======================================================================= */
+      var PASTEL_COLORS = [
+        { id: 'coral',    name: 'Pastel Coral',   bg: '#fecdd3' },
+        { id: 'mint',     name: 'Soft Mint',      bg: '#bbf7d0' },
+        { id: 'sky',      name: 'Pastel Sky',     bg: '#bae6fd' },
+        { id: 'butter',   name: 'Butter Yellow',  bg: '#fef08a' },
+        { id: 'lavender', name: 'Soft Lavender',  bg: '#ddd6fe' },
+        { id: 'peach',    name: 'Warm Peach',     bg: '#fed7aa' },
+        { id: 'lilac',    name: 'Blossom Lilac',  bg: '#f5d0fe' },
+        { id: 'sage',     name: 'Sage Green',     bg: '#c7f9cc' }
+      ];
+
+      function getPastelColorById(id) {
+        for (var i = 0; i < PASTEL_COLORS.length; i++) {
+          if (PASTEL_COLORS[i].id === id) return PASTEL_COLORS[i];
+        }
+        return PASTEL_COLORS[0];
+      }
+
+      /* =======================================================================
+         2. APPLICATION STATE (STARTS WITH ZERO PADS)
+         ======================================================================= */
+      var pads = [];
+      var activePlaybacks = new Map(); // padId -> playback object
+      var focusedPadId = null;
+      var isArrangeMode = false;
+      var draggedPadId = null;
+      var pendingDeletePadId = null;
+
+      var globalEndFadeEnabled = true;
+      var fadeDurationSec = 2.5;
+      var masterVolume = 0.9;
+
+      // Modal temporary audio state
+      var modalSelectedColorId = PASTEL_COLORS[0].id;
+      var modalPendingBlob = null;
+      var modalPendingUrl = '';
+      var modalPendingDuration = 0;
+      var modalPendingFileName = '';
+      var modalPendingSizeLabel = '';
+      var modalPreviewAudio = null;
+      var modalUploadToken = 0;
+
+      // Safe IndexedDB wrapper (never throws if blocked or unavailable)
+      var DB_NAME = 'StudioPadPastelDB_v1';
+      var DB_STORE = 'pads';
+      var dbInstance = null;
+
+      function initStorageSafe(callback) {
+        try {
+          if (!('indexedDB' in window) || !window.indexedDB) {
+            if (callback) callback();
+            return;
+          }
+          var req = window.indexedDB.open(DB_NAME, 1);
+          req.onupgradeneeded = function (event) {
+            try {
+              var db = event.target.result;
+              if (!db.objectStoreNames.contains(DB_STORE)) {
+                db.createObjectStore(DB_STORE, { keyPath: 'id' });
+              }
+            } catch (_) {}
+          };
+          req.onsuccess = function (event) {
+            dbInstance = event.target.result;
+            loadPadsFromStorageSafe(callback);
+          };
+          req.onerror = function () {
+            dbInstance = null;
+            if (callback) callback();
+          };
+        } catch (_) {
+          dbInstance = null;
+          if (callback) callback();
+        }
+      }
+
+      function savePadsToStorageSafe() {
+        try {
+          if (!dbInstance) return;
+          var tx = dbInstance.transaction(DB_STORE, 'readwrite');
+          var store = tx.objectStore(DB_STORE);
+          store.clear();
+          for (var i = 0; i < pads.length; i++) {
+            var p = pads[i];
+            store.put({
+              id: p.id,
+              order: i,
+              number: p.number,
+              name: p.name,
+              colorId: p.colorId,
+              autoFadeEnd: p.autoFadeEnd,
+              tonePreset: p.tonePreset || '',
+              sourceLabel: p.sourceLabel || '',
+              durationSec: p.durationSec || 0,
+              audioBlob: p.audioBlob || null
+            });
+          }
+        } catch (_) {}
+      }
+
+      function loadPadsFromStorageSafe(done) {
+        try {
+          if (!dbInstance) {
+            if (done) done();
+            return;
+          }
+          var tx = dbInstance.transaction(DB_STORE, 'readonly');
+          var store = tx.objectStore(DB_STORE);
+          var getAllReq = store.getAll();
+          getAllReq.onsuccess = function () {
+            try {
+              var rows = Array.isArray(getAllReq.result) ? getAllReq.result : [];
+              rows.sort(function (a, b) { return (a.order || 0) - (b.order || 0); });
+              var restored = [];
+              for (var i = 0; i < rows.length; i++) {
+                var r = rows[i];
+                var url = '';
+                if (r.audioBlob && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+                  try { url = URL.createObjectURL(r.audioBlob); } catch (_) { url = ''; }
+                }
+                restored.push({
+                  id: r.id,
+                  number: r.number || String(i + 1),
+                  name: r.name || 'Sound Pad',
+                  colorId: r.colorId || PASTEL_COLORS[i % PASTEL_COLORS.length].id,
+                  autoFadeEnd: typeof r.autoFadeEnd === 'boolean' ? r.autoFadeEnd : true,
+                  tonePreset: r.tonePreset || '',
+                  sourceLabel: r.sourceLabel || 'Audio Track',
+                  durationSec: r.durationSec || 0,
+                  audioBlob: r.audioBlob || null,
+                  audioUrl: url
+                });
+              }
+              pads = restored;
+            } catch (_) {}
+            if (done) done();
+          };
+          getAllReq.onerror = function () {
+            if (done) done();
+          };
+        } catch (_) {
+          if (done) done();
+        }
+      }
+
+      /* =======================================================================
+         3. TIME FORMATTING (MM:SS) & TOAST HELPERS
+         ======================================================================= */
+      function formatMMSS(seconds) {
+        if (!isFinite(seconds) || seconds < 0) seconds = 0;
+        var total = Math.floor(seconds);
+        var mins = Math.floor(total / 60);
+        var secs = total % 60;
+        var mStr = mins < 10 ? '0' + mins : String(mins);
+        var sStr = secs < 10 ? '0' + secs : String(secs);
+        return mStr + ':' + sStr;
+      }
+
+      var toastTimer = null;
+      function showToast(message) {
+        var el = document.getElementById('toastBanner');
+        if (!el) return;
+        el.textContent = message;
+        el.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(function () {
+          el.classList.remove('show');
+        }, 2400);
+      }
+
+      /* =======================================================================
+         4. BUILT-IN WAV SYNTH GENERATOR (NO EXTERNAL FILES NEEDED)
+         ======================================================================= */
+      function buildPresetWavBlob(presetKey) {
+        var duration = 10;
+        var freqs = [261.63, 329.63, 392.0]; // C4, E4, G4 warm chord
+        if (presetKey === 'soft_pulse') {
+          duration = 12;
+          freqs = [196.0, 246.94, 293.66];
+        } else if (presetKey === 'bell_chime') {
+          duration = 6;
+          freqs = [523.25, 659.25, 783.99];
+        } else if (presetKey === 'deep_bass') {
+          duration = 8;
+          freqs = [65.41, 98.0, 130.81];
+        }
+
+        var sampleRate = 22050;
+        var numSamples = Math.floor(sampleRate * duration);
+        var buffer = new ArrayBuffer(44 + numSamples * 2);
+        var view = new DataView(buffer);
+
+        function writeStr(offset, str) {
+          for (var i = 0; i < str.length; i++) {
+            view.setUint8(offset + i, str.charCodeAt(i));
+          }
+        }
+
+        writeStr(0, 'RIFF');
+        view.setUint32(4, 36 + numSamples * 2, true);
+        writeStr(8, 'WAVE');
+        writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true);
+        view.setUint16(20, 1, true); // PCM
+        view.setUint16(22, 1, true); // Mono
+        view.setUint32(24, sampleRate, true);
+        view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true);
+        view.setUint16(34, 16, true);
+        writeStr(36, 'data');
+        view.setUint32(40, numSamples * 2, true);
+
+        for (var s = 0; s < numSamples; s++) {
+          var t = s / sampleRate;
+          var envIn = Math.min(1, t / 0.15);
+          var envOut = Math.min(1, (duration - t) / 0.35);
+          var pulse = presetKey === 'soft_pulse' ? (0.65 + 0.35 * Math.sin(2 * Math.PI * 2 * t)) : 1;
+          var wave = 0;
+          for (var f = 0; f < freqs.length; f++) {
+            wave += Math.sin(2 * Math.PI * freqs[f] * t) / freqs.length;
+          }
+          var sampleVal = wave * envIn * envOut * pulse * 0.32;
+          var intSample = Math.max(-32768, Math.min(32767, Math.floor(sampleVal * 32767)));
+          view.setInt16(44 + s * 2, intSample, true);
+        }
+
+        return new Blob([buffer], { type: 'audio/wav' });
+      }
+
+      /* =======================================================================
+         5. PLAYBACK ENGINE & SMOOTH FADE-OUT (TAP TO FADE & END AUTO-FADE)
+         ======================================================================= */
+      function stopPlaybackImmediate(padId) {
+        var pb = activePlaybacks.get(padId);
+        if (!pb) return;
+        if (pb.fadeIntervalId) {
+          clearInterval(pb.fadeIntervalId);
+          pb.fadeIntervalId = null;
+        }
+        try {
+          if (pb.audioEl) {
+            pb.audioEl.pause();
+            pb.audioEl.currentTime = 0;
+          }
+        } catch (_) {}
+        activePlaybacks.delete(padId);
+        updateSinglePadCardUI(padId);
+        updateMonitorUI();
+      }
+
+      function fadeOutPad(padId, requestedSeconds, reasonLabel) {
+        var pb = activePlaybacks.get(padId);
+        if (!pb || pb.isFading) return;
+
+        var timing = getPlaybackTiming(pb);
+        var durationSec = Math.max(0.15, Math.min(requestedSeconds, timing.remaining > 0.1 ? timing.remaining : requestedSeconds));
+
+        pb.isFading = true;
+        pb.fadeReason = reasonLabel || 'Fading Out';
+
+        var startVolume = 1;
+        try {
+          startVolume = Math.max(0.01, pb.audioEl.volume);
+        } catch (_) {
+          startVolume = masterVolume;
+        }
+
+        var startMs = Date.now();
+        var totalMs = durationSec * 1000;
+
+        pb.fadeIntervalId = setInterval(function () {
+          var elapsedMs = Date.now() - startMs;
+          var progress = Math.min(1, elapsedMs / totalMs);
+          var eased = Math.pow(1 - progress, 1.5);
+          try {
+            if (pb.audioEl) {
+              pb.audioEl.volume = Math.max(0, Math.min(1, startVolume * eased));
+            }
+          } catch (_) {}
+
+          if (progress >= 1) {
+            stopPlaybackImmediate(padId);
+          }
+        }, 20);
+
+        updateSinglePadCardUI(padId);
+        updateMonitorUI();
+      }
+
+      function startPadPlayback(pad) {
+        stopModalTestPlay();
+
+        var url = pad.audioUrl;
+        if (!url && pad.audioBlob && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+          try {
+            url = URL.createObjectURL(pad.audioBlob);
+            pad.audioUrl = url;
+          } catch (_) {
+            url = '';
+          }
+        }
+
+        if (!url) {
+          var fallbackBlob = buildPresetWavBlob(pad.tonePreset || 'warm_chord');
+          pad.audioBlob = fallbackBlob;
+          if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+            try { url = URL.createObjectURL(fallbackBlob); pad.audioUrl = url; } catch (_) {}
+          }
+        }
+
+        var audioEl = new Audio();
+        audioEl.preload = 'auto';
+        audioEl.setAttribute('playsinline', '');
+        audioEl.volume = Math.max(0, Math.min(1, masterVolume));
+        if (url) {
+          audioEl.src = url;
+        }
+
+        var pb = {
+          padId: pad.id,
+          audioEl: audioEl,
+          startMs: Date.now(),
+          knownDuration: pad.durationSec || 0,
+          isFading: false,
+          fadeReason: '',
+          endFadeStarted: false,
+          fadeIntervalId: null
+        };
+
+        audioEl.addEventListener('loadedmetadata', function () {
+          if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+            pb.knownDuration = audioEl.duration;
+            pad.durationSec = audioEl.duration;
+          }
+        });
+
+        audioEl.addEventListener('durationchange', function () {
+          if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+            pb.knownDuration = audioEl.duration;
+            pad.durationSec = audioEl.duration;
+          }
+        });
+
+        audioEl.addEventListener('ended', function () {
+          stopPlaybackImmediate(pad.id);
+        });
+
+        audioEl.addEventListener('error', function () {
+          stopPlaybackImmediate(pad.id);
+          showToast('Unable to play audio on this device');
+        });
+
+        activePlaybacks.set(pad.id, pb);
+        focusedPadId = pad.id;
+
+        try {
+          var playRes = audioEl.play();
+          if (playRes && typeof playRes.catch === 'function') {
+            playRes.catch(function () {
+              showToast('Tap pad again to start playback');
+            });
+          }
+        } catch (_) {}
+
+        updateSinglePadCardUI(pad.id);
+        updateMonitorUI();
+      }
+
+      function handlePadTap(padId) {
+        if (isArrangeMode) return;
+        var pad = findPadById(padId);
+        if (!pad) return;
+
+        focusedPadId = pad.id;
+
+        if (activePlaybacks.has(pad.id)) {
+          // Tapping an already playing pad smoothly auto-fades it out
+          fadeOutPad(pad.id, fadeDurationSec, 'Tap Auto-Fade');
+        } else {
+          startPadPlayback(pad);
+        }
+      }
+
+      function fadeOutAllActivePads() {
+        if (activePlaybacks.size === 0) {
+          showToast('No pads currently playing');
+          return;
+        }
+        activePlaybacks.forEach(function (_pb, padId) {
+          fadeOutPad(padId, fadeDurationSec, 'Fade All');
+        });
+      }
+
+      function getPlaybackTiming(pb) {
+        var elapsed = 0;
+        var duration = pb.knownDuration || 0;
+
+        try {
+          if (pb.audioEl && isFinite(pb.audioEl.currentTime) && pb.audioEl.currentTime > 0) {
+            elapsed = pb.audioEl.currentTime;
+          } else {
+            elapsed = (Date.now() - pb.startMs) / 1000;
+          }
+          if (pb.audioEl && isFinite(pb.audioEl.duration) && pb.audioEl.duration > 0) {
+            duration = pb.audioEl.duration;
+          }
+        } catch (_) {
+          elapsed = (Date.now() - pb.startMs) / 1000;
+        }
+
+        if (duration <= 0 && elapsed > 0) {
+          duration = Math.max(elapsed, 1);
+        }
+
+        var remaining = Math.max(0, duration - elapsed);
+        var ratio = duration > 0 ? Math.max(0, Math.min(1, elapsed / duration)) : 0;
+
+        return {
+          elapsed: elapsed,
+          duration: duration,
+          remaining: remaining,
+          ratio: ratio
+        };
+      }
+
+      /* =======================================================================
+         6. LIVE MONITOR & PAD GRID RENDERING
+         ======================================================================= */
+      function findPadById(id) {
+        for (var i = 0; i < pads.length; i++) {
+          if (pads[i].id === id) return pads[i];
+        }
+        return null;
+      }
+
+      function updateMonitorUI() {
+        var badgeEl = document.getElementById('monitorPadBadge');
+        var dotEl = document.getElementById('monitorStatusDot');
+        var statusTextEl = document.getElementById('monitorStatusText');
+        var titleEl = document.getElementById('monitorTrackTitle');
+        var elapsedEl = document.getElementById('monitorElapsed');
+        var durationEl = document.getElementById('monitorDuration');
+        var remainingEl = document.getElementById('monitorRemaining');
+        var barEl = document.getElementById('monitorProgressBar');
+
+        var targetPb = null;
+        if (focusedPadId && activePlaybacks.has(focusedPadId)) {
+          targetPb = activePlaybacks.get(focusedPadId);
+        } else if (activePlaybacks.size > 0) {
+          var firstEntry = activePlaybacks.entries().next();
+          if (!firstEntry.done) targetPb = firstEntry.value[1];
+        }
+
+        if (!targetPb) {
+          badgeEl.textContent = '--';
+          badgeEl.className = 'monitor-pad-badge mono';
+          dotEl.className = 'status-dot';
+          statusTextEl.textContent = pads.length === 0 ? 'READY — ADD YOUR FIRST PAD' : 'STANDBY — TAP A PAD TO PLAY';
+          titleEl.textContent = pads.length === 0 ? 'No pads created yet' : 'No pad currently playing';
+          elapsedEl.textContent = '00:00';
+          durationEl.textContent = '00:00';
+          remainingEl.textContent = '-00:00';
+          barEl.style.width = '0%';
+          barEl.className = 'progress-fill';
+          return;
+        }
+
+        var pad = findPadById(targetPb.padId);
+        var t = getPlaybackTiming(targetPb);
+
+        badgeEl.textContent = pad ? '#' + pad.number : '--';
+        titleEl.textContent = pad ? pad.name : 'Active Sound';
+        elapsedEl.textContent = formatMMSS(t.elapsed);
+        durationEl.textContent = formatMMSS(t.duration);
+        remainingEl.textContent = '-' + formatMMSS(t.remaining);
+        barEl.style.width = (t.ratio * 100).toFixed(1) + '%';
+
+        if (targetPb.isFading) {
+          badgeEl.className = 'monitor-pad-badge mono fading';
+          dotEl.className = 'status-dot fading';
+          statusTextEl.textContent = (targetPb.fadeReason || 'AUTO FADING OUT') + ' (' + fadeDurationSec.toFixed(1) + 's)';
+          barEl.className = 'progress-fill fading';
+        } else {
+          badgeEl.className = 'monitor-pad-badge mono playing';
+          dotEl.className = 'status-dot playing';
+          statusTextEl.textContent = 'PLAYING • TAP PAD AGAIN TO AUTO-FADE OUT';
+          barEl.className = 'progress-fill';
+        }
+      }
+
+      function updateSinglePadCardUI(padId) {
+        var card = document.querySelector('[data-pad-card-id="' + padId + '"]');
+        if (!card) return;
+        var pad = findPadById(padId);
+        if (!pad) return;
+
+        var pb = activePlaybacks.get(padId);
+        var tagEl = card.querySelector('[data-role="state-tag"]');
+        var clockEl = card.querySelector('[data-role="clock"]');
+
+        card.classList.remove('is-playing', 'is-fading');
+        if (tagEl) tagEl.classList.remove('playing', 'fading');
+
+        if (!pb) {
+          if (tagEl) tagEl.textContent = 'Tap to Play';
+          if (clockEl) {
+            clockEl.textContent = pad.durationSec > 0 ? formatMMSS(pad.durationSec) : '00:00';
+          }
+          return;
+        }
+
+        var t = getPlaybackTiming(pb);
+        if (pb.isFading) {
+          card.classList.add('is-fading');
+          if (tagEl) {
+            tagEl.classList.add('fading');
+            tagEl.textContent = 'Fading Out';
+          }
+        } else {
+          card.classList.add('is-playing');
+          if (tagEl) {
+            tagEl.classList.add('playing');
+            tagEl.textContent = 'Playing • Tap to Fade';
+          }
+        }
+
+        if (clockEl) {
+          clockEl.textContent = formatMMSS(t.elapsed) + ' / ' + formatMMSS(t.duration);
+        }
+      }
+
+      function renderPadGrid() {
+        var grid = document.getElementById('padGrid');
+        if (!grid) return;
+
+        grid.innerHTML = '';
+
+        // Requirement 1: Start with ZERO pads on the board initially, showing "+ Add First Pad"
+        if (pads.length === 0) {
+          var emptyCard = document.createElement('div');
+          emptyCard.className = 'empty-board-card';
+          emptyCard.innerHTML =
+            '<div class="empty-icon-circle">+</div>' +
+            '<h2 class="empty-title">Your Sound Board is Empty</h2>' +
+            '<p class="empty-desc">Start by adding Pad #1 with your custom number, music or sound name, solid pastel color, and audio file from your phone.</p>' +
+            '<button id="addFirstPadBtn" type="button" class="btn btn-primary" style="padding:12px 20px;font-size:0.9rem;">+ Add First Pad</button>';
+          grid.appendChild(emptyCard);
+
+          var firstBtn = document.getElementById('addFirstPadBtn');
+          if (firstBtn) {
+            firstBtn.addEventListener('click', function () {
+              openPadModal(null);
+            });
+          }
+          return;
+        }
+
+        for (var i = 0; i < pads.length; i++) {
+          var pad = pads[i];
+          var palette = getPastelColorById(pad.colorId);
+          var pb = activePlaybacks.get(pad.id);
+
+          var card = document.createElement('article');
+          card.className = 'sound-pad' + (isArrangeMode ? ' is-arranging' : '');
+          card.setAttribute('data-pad-card-id', pad.id);
+          card.style.backgroundColor = palette.bg;
+
+          if (pb) {
+            card.classList.add(pb.isFading ? 'is-fading' : 'is-playing');
+          }
+
+          if (isArrangeMode) {
+            card.draggable = true;
+            card.addEventListener('dragstart', handleDragStart);
+            card.addEventListener('dragover', handleDragOver);
+            card.addEventListener('dragleave', handleDragLeave);
+            card.addEventListener('drop', handleDrop);
+            card.addEventListener('dragend', handleDragEnd);
+          } else {
+            card.addEventListener('click', (function (id) {
+              return function () { handlePadTap(id); };
+            })(pad.id));
+          }
+
+          // Top row: Pad Number + Edit/Delete buttons
+          var topBar = document.createElement('div');
+          topBar.className = 'pad-top-bar';
+
+          var numBadge = document.createElement('span');
+          numBadge.className = 'pad-num-pill mono';
+          numBadge.textContent = '#' + pad.number;
+
+          var actionBtns = document.createElement('div');
+          actionBtns.className = 'pad-action-btns';
+
+          var editBtn = document.createElement('button');
+          editBtn.type = 'button';
+          editBtn.className = 'pad-mini-btn';
+          editBtn.title = 'Edit Pad';
+          editBtn.setAttribute('aria-label', 'Edit Pad ' + pad.number);
+          editBtn.textContent = 'Edit';
+          editBtn.addEventListener('click', (function (id) {
+            return function (ev) {
+              ev.stopPropagation();
+              openPadModal(id);
+            };
+          })(pad.id));
+
+          var delBtn = document.createElement('button');
+          delBtn.type = 'button';
+          delBtn.className = 'pad-mini-btn del';
+          delBtn.title = 'Delete Pad';
+          delBtn.setAttribute('aria-label', 'Delete Pad ' + pad.number);
+          delBtn.textContent = 'Del';
+          delBtn.addEventListener('click', (function (id) {
+            return function (ev) {
+              ev.stopPropagation();
+              openDeleteModal(id);
+            };
+          })(pad.id));
+
+          actionBtns.appendChild(editBtn);
+          actionBtns.appendChild(delBtn);
+          topBar.appendChild(numBadge);
+          topBar.appendChild(actionBtns);
+
+          // Center: Music/Sound Name + Source Info
+          var centerBox = document.createElement('div');
+          centerBox.className = 'pad-center-info';
+
+          var titleEl = document.createElement('h3');
+          titleEl.className = 'pad-music-title';
+          titleEl.textContent = pad.name;
+
+          var subEl = document.createElement('p');
+          subEl.className = 'pad-source-sub';
+          subEl.textContent = (pad.sourceLabel || 'Audio Track') + (pad.autoFadeEnd ? ' • End Fade On' : '');
+
+          centerBox.appendChild(titleEl);
+          centerBox.appendChild(subEl);
+
+          card.appendChild(topBar);
+          card.appendChild(centerBox);
+
+          // Bottom: Arrange controls OR Status + Clock
+          if (isArrangeMode) {
+            var arrRow = document.createElement('div');
+            arrRow.className = 'pad-arrange-row';
+
+            var leftBtn = document.createElement('button');
+            leftBtn.type = 'button';
+            leftBtn.className = 'arrange-move-btn';
+            leftBtn.textContent = '← Move Left';
+            leftBtn.addEventListener('click', (function (idx) {
+              return function (ev) {
+                ev.stopPropagation();
+                movePadByOffset(idx, -1);
+              };
+            })(i));
+
+            var rightBtn = document.createElement('button');
+            rightBtn.type = 'button';
+            rightBtn.className = 'arrange-move-btn';
+            rightBtn.textContent = 'Move Right →';
+            rightBtn.addEventListener('click', (function (idx) {
+              return function (ev) {
+                ev.stopPropagation();
+                movePadByOffset(idx, 1);
+              };
+            })(i));
+
+            arrRow.appendChild(leftBtn);
+            arrRow.appendChild(rightBtn);
+            card.appendChild(arrRow);
+          } else {
+            var botBar = document.createElement('div');
+            botBar.className = 'pad-bottom-bar';
+
+            var tagEl = document.createElement('span');
+            tagEl.className = 'pad-state-tag';
+            tagEl.setAttribute('data-role', 'state-tag');
+
+            var clockEl = document.createElement('span');
+            clockEl.className = 'pad-clock-readout mono';
+            clockEl.setAttribute('data-role', 'clock');
+
+            if (!pb) {
+              tagEl.textContent = 'Tap to Play';
+              clockEl.textContent = pad.durationSec > 0 ? formatMMSS(pad.durationSec) : '00:00';
+            } else {
+              var timing = getPlaybackTiming(pb);
+              if (pb.isFading) {
+                tagEl.classList.add('fading');
+                tagEl.textContent = 'Fading Out';
+              } else {
+                tagEl.classList.add('playing');
+                tagEl.textContent = 'Playing • Tap to Fade';
+              }
+              clockEl.textContent = formatMMSS(timing.elapsed) + ' / ' + formatMMSS(timing.duration);
+            }
+
+            botBar.appendChild(tagEl);
+            botBar.appendChild(clockEl);
+            card.appendChild(botBar);
+          }
+
+          grid.appendChild(card);
+        }
+      }
+
+      /* =======================================================================
+         7. ARRANGE PADS (LEFT/RIGHT, DRAG & DROP, SORT BY NUMBER)
+         ======================================================================= */
+      function movePadByOffset(index, delta) {
+        var targetIndex = index + delta;
+        if (targetIndex < 0 || targetIndex >= pads.length) return;
+        var item = pads.splice(index, 1)[0];
+        pads.splice(targetIndex, 0, item);
+        savePadsToStorageSafe();
+        renderPadGrid();
+      }
+
+      function handleDragStart(e) {
+        draggedPadId = this.getAttribute('data-pad-card-id');
+        try {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', draggedPadId || '');
+        } catch (_) {}
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        this.classList.add('drag-over');
+      }
+
+      function handleDragLeave() {
+        this.classList.remove('drag-over');
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        var targetId = this.getAttribute('data-pad-card-id');
+        var sourceId = draggedPadId;
+        if (!sourceId || !targetId || sourceId === targetId) return;
+
+        var fromIdx = -1;
+        var toIdx = -1;
+        for (var i = 0; i < pads.length; i++) {
+          if (pads[i].id === sourceId) fromIdx = i;
+          if (pads[i].id === targetId) toIdx = i;
+        }
+        if (fromIdx < 0 || toIdx < 0) return;
+
+        var moved = pads.splice(fromIdx, 1)[0];
+        pads.splice(toIdx, 0, moved);
+        draggedPadId = null;
+        savePadsToStorageSafe();
+        renderPadGrid();
+        showToast('Pad order updated');
+      }
+
+      function handleDragEnd() {
+        draggedPadId = null;
+        var cards = document.querySelectorAll('.sound-pad.drag-over');
+        for (var i = 0; i < cards.length; i++) {
+          cards[i].classList.remove('drag-over');
+        }
+      }
+
+      function toggleArrangeMode(forceState) {
+        if (pads.length === 0 && (forceState === true || !isArrangeMode)) {
+          showToast('Add at least one pad first');
+          return;
+        }
+        isArrangeMode = typeof forceState === 'boolean' ? forceState : !isArrangeMode;
+        var btn = document.getElementById('arrangeToggleBtn');
+        var bar = document.getElementById('arrangeToolbar');
+        if (btn) btn.classList.toggle('is-active', isArrangeMode);
+        if (bar) bar.classList.toggle('visible', isArrangeMode);
+        renderPadGrid();
+      }
+
+      function sortPadsByNumber() {
+        pads.sort(function (a, b) {
+          var na = parseFloat(a.number);
+          var nb = parseFloat(b.number);
+          if (!isNaN(na) && !isNaN(nb) && na !== nb) return na - nb;
+          return String(a.number).localeCompare(String(b.number));
+        });
+        savePadsToStorageSafe();
+        renderPadGrid();
+        showToast('Sorted pads by number');
+      }
+
+      /* =======================================================================
+         8. ADD / EDIT PAD MODAL & PHONE AUDIO UPLOAD
+         ======================================================================= */
+      function renderColorSwatches() {
+        var grid = document.getElementById('colorSwatchGrid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        for (var i = 0; i < PASTEL_COLORS.length; i++) {
+          var c = PASTEL_COLORS[i];
+          var btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'swatch-btn' + (c.id === modalSelectedColorId ? ' selected' : '');
+          btn.style.backgroundColor = c.bg;
+          btn.textContent = c.name;
+          btn.addEventListener('click', (function (colorId) {
+            return function () {
+              modalSelectedColorId = colorId;
+              renderColorSwatches();
+            };
+          })(c.id));
+          grid.appendChild(btn);
+        }
+      }
+
+      function stopModalTestPlay() {
+        if (modalPreviewAudio) {
+          try {
+            modalPreviewAudio.pause();
+            modalPreviewAudio.src = '';
+          } catch (_) {}
+          modalPreviewAudio = null;
+        }
+        var btn = document.getElementById('modalTestPlayBtn');
+        var status = document.getElementById('modalTestPlayStatus');
+        if (btn) btn.textContent = 'Test Play';
+        if (status) status.textContent = 'Ready';
+      }
+
+      function toggleModalTestPlay() {
+        var btn = document.getElementById('modalTestPlayBtn');
+        var status = document.getElementById('modalTestPlayStatus');
+
+        if (modalPreviewAudio) {
+          stopModalTestPlay();
+          return;
+        }
+
+        var url = modalPendingUrl;
+        if (!url && modalPendingBlob && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+          try {
+            url = URL.createObjectURL(modalPendingBlob);
+            modalPendingUrl = url;
+          } catch (_) {
+            url = '';
+          }
+        }
+
+        if (!url) {
+          showToast('Pick an audio file first');
+          return;
+        }
+
+        var audio = new Audio();
+        audio.setAttribute('playsinline', '');
+        audio.volume = Math.max(0, Math.min(1, masterVolume));
+        audio.src = url;
+        modalPreviewAudio = audio;
+
+        if (btn) btn.textContent = 'Stop Test';
+        if (status) status.textContent = 'Playing...';
+
+        audio.addEventListener('ended', function () {
+          stopModalTestPlay();
+        });
+        audio.addEventListener('error', function () {
+          stopModalTestPlay();
+          if (status) status.textContent = 'Playback error';
+        });
+
+        try {
+          var p = audio.play();
+          if (p && typeof p.catch === 'function') {
+            p.catch(function () {
+              stopModalTestPlay();
+            });
+          }
+        } catch (_) {}
+      }
+
+      function probeDurationSafe(url, onDone) {
+        try {
+          var probe = new Audio();
+          probe.preload = 'metadata';
+          var finished = false;
+          function complete(sec) {
+            if (finished) return;
+            finished = true;
+            onDone(isFinite(sec) && sec > 0 ? sec : 0);
+          }
+          probe.addEventListener('loadedmetadata', function () { complete(probe.duration); });
+          probe.addEventListener('durationchange', function () {
+            if (isFinite(probe.duration) && probe.duration > 0) complete(probe.duration);
+          });
+          probe.addEventListener('error', function () { complete(0); });
+          setTimeout(function () { complete(0); }, 2500);
+          probe.src = url;
+          probe.load();
+        } catch (_) {
+          onDone(0);
+        }
+      }
+
+      function handlePhoneFileSelected(event) {
+        var input = event.target;
+        var file = input && input.files && input.files[0];
+        if (!file) return;
+
+        stopModalTestPlay();
+        var myToken = ++modalUploadToken;
+
+        var fileName = file.name || 'Phone Audio File';
+        var sizeMB = ((file.size || 0) / (1024 * 1024)).toFixed(2);
+        var instantUrl = '';
+        if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+          try { instantUrl = URL.createObjectURL(file); } catch (_) { instantUrl = ''; }
+        }
+
+        modalPendingBlob = file;
+        modalPendingUrl = instantUrl;
+        modalPendingDuration = 0;
+        modalPendingFileName = fileName;
+        modalPendingSizeLabel = sizeMB + ' MB';
+
+        var presetSel = document.getElementById('padTonePresetSelect');
+        if (presetSel) presetSel.value = '';
+
+        var nameInput = document.getElementById('padNameInput');
+        if (nameInput && !nameInput.value.trim()) {
+          nameInput.value = fileName.replace(/\.[^/.]+$/, '').slice(0, 40);
+        }
+
+        document.getElementById('uploadFileName').textContent = fileName;
+        document.getElementById('uploadFileMeta').textContent = sizeMB + ' MB • Ready';
+        document.getElementById('modalTestPlayRow').classList.add('visible');
+
+        // Read into an in-memory Blob via FileReader so mobile URI permissions stay valid
+        try {
+          var reader = new FileReader();
+          reader.onload = function () {
+            if (myToken !== modalUploadToken) return;
+            try {
+              var mime = file.type || 'audio/mpeg';
+              var memoryBlob = new Blob([reader.result], { type: mime });
+              var memoryUrl = '';
+              if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+                memoryUrl = URL.createObjectURL(memoryBlob);
+              }
+              modalPendingBlob = memoryBlob;
+              if (memoryUrl) {
+                modalPendingUrl = memoryUrl;
+                probeDurationSafe(memoryUrl, function (sec) {
+                  if (myToken !== modalUploadToken) return;
+                  if (sec > 0) {
+                    modalPendingDuration = sec;
+                    document.getElementById('uploadFileMeta').textContent =
+                      sizeMB + ' MB • Length ' + formatMMSS(sec) + ' • Ready';
+                  }
+                });
+              }
+            } catch (_) {}
+          };
+          reader.readAsArrayBuffer(file);
+        } catch (_) {}
+
+        showToast('Audio file attached: ' + fileName);
+      }
+
+      function openPadModal(padId) {
+        stopModalTestPlay();
+        modalUploadToken++;
+
+        var modal = document.getElementById('padModal');
+        var titleEl = document.getElementById('padModalTitle');
+        var editIdEl = document.getElementById('editPadIdInput');
+        var numEl = document.getElementById('padNumberInput');
+        var nameEl = document.getElementById('padNameInput');
+        var fileInput = document.getElementById('padAudioFileInput');
+        var presetEl = document.getElementById('padTonePresetSelect');
+        var autoFadeEl = document.getElementById('padAutoFadeEndInput');
+        var testRow = document.getElementById('modalTestPlayRow');
+
+        modalPendingBlob = null;
+        modalPendingUrl = '';
+        modalPendingDuration = 0;
+        modalPendingFileName = '';
+        modalPendingSizeLabel = '';
+        if (fileInput) fileInput.value = '';
+
+        if (padId) {
+          var pad = findPadById(padId);
+          if (!pad) return;
+          titleEl.textContent = 'Edit Pad #' + pad.number;
+          editIdEl.value = pad.id;
+          numEl.value = pad.number;
+          nameEl.value = pad.name;
+          presetEl.value = pad.tonePreset || '';
+          autoFadeEl.checked = pad.autoFadeEnd;
+          modalSelectedColorId = pad.colorId || PASTEL_COLORS[0].id;
+
+          document.getElementById('uploadFileName').textContent = pad.sourceLabel || 'Assigned Audio';
+          document.getElementById('uploadFileMeta').textContent =
+            (pad.durationSec > 0 ? 'Length ' + formatMMSS(pad.durationSec) + ' • ' : '') +
+            'Select a new file to replace';
+
+          if (pad.audioUrl || pad.audioBlob) {
+            modalPendingBlob = pad.audioBlob || null;
+            modalPendingUrl = pad.audioUrl || '';
+            modalPendingDuration = pad.durationSec || 0;
+            testRow.classList.add('visible');
+          } else {
+            testRow.classList.remove('visible');
+          }
+        } else {
+          var nextNumber = pads.length + 1;
+          titleEl.textContent = nextNumber === 1 ? 'Add First Pad (#1)' : 'Add Pad (#' + nextNumber + ')';
+          editIdEl.value = '';
+          numEl.value = String(nextNumber);
+          nameEl.value = '';
+          presetEl.value = 'warm_chord';
+          autoFadeEl.checked = true;
+          // Cycle solid pastel colors automatically for each new pad
+          modalSelectedColorId = PASTEL_COLORS[(nextNumber - 1) % PASTEL_COLORS.length].id;
+
+          document.getElementById('uploadFileName').textContent = 'No audio file selected yet';
+          document.getElementById('uploadFileMeta').textContent = 'Choose a file from phone storage or pick a built-in tone';
+          testRow.classList.remove('visible');
+        }
+
+        renderColorSwatches();
+        modal.classList.add('open');
+      }
+
+      function closePadModal() {
+        stopModalTestPlay();
+        var modal = document.getElementById('padModal');
+        if (modal) modal.classList.remove('open');
+      }
+
+      function handleSavePadForm(e) {
+        e.preventDefault();
+
+        var editId = document.getElementById('editPadIdInput').value;
+        var numVal = (document.getElementById('padNumberInput').value || '').trim() || '1';
+        var nameVal = (document.getElementById('padNameInput').value || '').trim() || 'Sound Pad';
+        var presetVal = document.getElementById('padTonePresetSelect').value || '';
+        var autoFadeVal = document.getElementById('padAutoFadeEndInput').checked;
+
+        if (editId) {
+          var existing = findPadById(editId);
+          if (existing) {
+            if (activePlaybacks.has(existing.id)) {
+              stopPlaybackImmediate(existing.id);
+            }
+            existing.number = numVal;
+            existing.name = nameVal;
+            existing.colorId = modalSelectedColorId;
+            existing.autoFadeEnd = autoFadeVal;
+
+            if (modalPendingBlob) {
+              existing.audioBlob = modalPendingBlob;
+              existing.audioUrl = modalPendingUrl;
+              existing.tonePreset = '';
+              existing.durationSec = modalPendingDuration;
+              existing.sourceLabel = modalPendingFileName
+                ? modalPendingFileName + (modalPendingSizeLabel ? ' (' + modalPendingSizeLabel + ')' : '')
+                : 'Uploaded Audio';
+            } else if (presetVal) {
+              var presetBlob = buildPresetWavBlob(presetVal);
+              existing.audioBlob = presetBlob;
+              existing.tonePreset = presetVal;
+              if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+                try { existing.audioUrl = URL.createObjectURL(presetBlob); } catch (_) {}
+              }
+              existing.durationSec = presetVal === 'bell_chime' ? 6 : (presetVal === 'deep_bass' ? 8 : (presetVal === 'soft_pulse' ? 12 : 10));
+              existing.sourceLabel = 'Built-in Tone (' + presetVal.replace('_', ' ') + ')';
+            }
+            showToast('Updated Pad #' + numVal);
+          }
+        } else {
+          var blobToUse = modalPendingBlob;
+          var urlToUse = modalPendingUrl;
+          var durToUse = modalPendingDuration;
+          var labelToUse = modalPendingFileName
+            ? modalPendingFileName + (modalPendingSizeLabel ? ' (' + modalPendingSizeLabel + ')' : '')
+            : 'Uploaded Audio';
+          var chosenPreset = '';
+
+          if (!blobToUse) {
+            chosenPreset = presetVal || 'warm_chord';
+            blobToUse = buildPresetWavBlob(chosenPreset);
+            if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+              try { urlToUse = URL.createObjectURL(blobToUse); } catch (_) { urlToUse = ''; }
+            }
+            durToUse = chosenPreset === 'bell_chime' ? 6 : (chosenPreset === 'deep_bass' ? 8 : (chosenPreset === 'soft_pulse' ? 12 : 10));
+            labelToUse = 'Built-in Tone (' + chosenPreset.replace('_', ' ') + ')';
+          }
+
+          var newPad = {
+            id: 'pad_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+            number: numVal,
+            name: nameVal,
+            colorId: modalSelectedColorId,
+            autoFadeEnd: autoFadeVal,
+            tonePreset: chosenPreset,
+            audioBlob: blobToUse,
+            audioUrl: urlToUse,
+            durationSec: durToUse,
+            sourceLabel: labelToUse
+          };
+
+          pads.push(newPad);
+          showToast('Added Pad #' + numVal + ' — ' + nameVal);
+        }
+
+        savePadsToStorageSafe();
+        closePadModal();
+        renderPadGrid();
+        updateMonitorUI();
+      }
+
+      /* =======================================================================
+         9. DELETE PAD MODAL
+         ======================================================================= */
+      function openDeleteModal(padId) {
+        var pad = findPadById(padId);
+        if (!pad) return;
+        pendingDeletePadId = padId;
+        var msg = document.getElementById('deleteModalMessage');
+        if (msg) {
+          msg.textContent = 'Remove Pad #' + pad.number + ' ("' + pad.name + '") from your sound board?';
+        }
+        document.getElementById('deleteModal').classList.add('open');
+      }
+
+      function closeDeleteModal() {
+        pendingDeletePadId = null;
+        document.getElementById('deleteModal').classList.remove('open');
+      }
+
+      function confirmDeletePad() {
+        if (!pendingDeletePadId) return;
+        var idToDelete = pendingDeletePadId;
+        stopPlaybackImmediate(idToDelete);
+        pads = pads.filter(function (p) { return p.id !== idToDelete; });
+        if (pads.length === 0 && isArrangeMode) {
+          isArrangeMode = false;
+          document.getElementById('arrangeToggleBtn').classList.remove('is-active');
+          document.getElementById('arrangeToolbar').classList.remove('visible');
+        }
+        savePadsToStorageSafe();
+        closeDeleteModal();
+        renderPadGrid();
+        updateMonitorUI();
+        showToast('Pad deleted');
+      }
+
+      /* =======================================================================
+         10. REAL-TIME CLOCK & END-OF-MUSIC AUTO-FADE LOOP
+         ======================================================================= */
+      function tickPlaybackLoop() {
+        activePlaybacks.forEach(function (pb, padId) {
+          var pad = findPadById(padId);
+          var timing = getPlaybackTiming(pb);
+
+          // Check End Auto-Fade option (global toggle AND per-pad toggle)
+          var endFadeActive = globalEndFadeEnabled && (!pad || pad.autoFadeEnd);
+          if (
+            endFadeActive &&
+            !pb.isFading &&
+            !pb.endFadeStarted &&
+            timing.duration > fadeDurationSec + 0.25 &&
+            timing.remaining <= fadeDurationSec &&
+            timing.remaining > 0.05
+          ) {
+            pb.endFadeStarted = true;
+            fadeOutPad(padId, fadeDurationSec, 'End Auto-Fade');
+          }
+
+          updateSinglePadCardUI(padId);
+        });
+
+        updateMonitorUI();
+      }
+
+      /* =======================================================================
+         11. EVENT WIRING & SAFE INITIALIZATION
+         ======================================================================= */
+      function wireEvents() {
+        document.getElementById('addPadHeaderBtn').addEventListener('click', function () {
+          openPadModal(null);
+        });
+
+        document.getElementById('arrangeToggleBtn').addEventListener('click', function () {
+          toggleArrangeMode();
+        });
+
+        document.getElementById('doneArrangeBtn').addEventListener('click', function () {
+          toggleArrangeMode(false);
+        });
+
+        document.getElementById('sortByNumberBtn').addEventListener('click', sortPadsByNumber);
+
+        document.getElementById('stopAllFadeBtn').addEventListener('click', fadeOutAllActivePads);
+
+        document.getElementById('globalEndFadeToggle').addEventListener('change', function (e) {
+          globalEndFadeEnabled = !!e.target.checked;
+          showToast(globalEndFadeEnabled ? 'End Auto-Fade enabled' : 'End Auto-Fade off');
+        });
+
+        document.getElementById('fadeDurationRange').addEventListener('input', function (e) {
+          fadeDurationSec = parseFloat(e.target.value) || 2.5;
+          document.getElementById('fadeDurationLabel').textContent = fadeDurationSec.toFixed(1) + 's';
+        });
+
+        document.getElementById('masterVolumeRange').addEventListener('input', function (e) {
+          masterVolume = parseFloat(e.target.value);
+          if (isNaN(masterVolume)) masterVolume = 0.9;
+          document.getElementById('masterVolumeLabel').textContent = Math.round(masterVolume * 100) + '%';
+          activePlaybacks.forEach(function (pb) {
+            if (!pb.isFading && pb.audioEl) {
+              try { pb.audioEl.volume = masterVolume; } catch (_) {}
+            }
+          });
+          if (modalPreviewAudio) {
+            try { modalPreviewAudio.volume = masterVolume; } catch (_) {}
+          }
+        });
+
+        document.getElementById('closePadModalBtn').addEventListener('click', closePadModal);
+        document.getElementById('cancelPadModalBtn').addEventListener('click', closePadModal);
+        document.getElementById('padForm').addEventListener('submit', handleSavePadForm);
+        document.getElementById('padAudioFileInput').addEventListener('change', handlePhoneFileSelected);
+        document.getElementById('modalTestPlayBtn').addEventListener('click', toggleModalTestPlay);
+
+        document.getElementById('padTonePresetSelect').addEventListener('change', function (e) {
+          if (e.target.value) {
+            stopModalTestPlay();
+            modalPendingBlob = null;
+            modalPendingUrl = '';
+            modalPendingDuration = 0;
+            modalPendingFileName = '';
+            document.getElementById('modalTestPlayRow').classList.remove('visible');
+            document.getElementById('uploadFileName').textContent = 'Using built-in sound tone';
+            document.getElementById('uploadFileMeta').textContent = 'Or choose a file from your phone above';
+          }
+        });
+
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+        document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDeletePad);
+
+        // Close modals on backdrop click
+        document.getElementById('padModal').addEventListener('click', function (e) {
+          if (e.target === this) closePadModal();
+        });
+        document.getElementById('deleteModal').addEventListener('click', function (e) {
+          if (e.target === this) closeDeleteModal();
+        });
+      }
+
+      function initApp() {
+        wireEvents();
+        renderPadGrid();
+        updateMonitorUI();
+
+        setInterval(tickPlaybackLoop, 120);
+
+        initStorageSafe(function () {
+          renderPadGrid();
+          updateMonitorUI();
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+      } else {
+        initApp();
+      }
+    })();
+  </script>
+</body>
+</html>
+```
